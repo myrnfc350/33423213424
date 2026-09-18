@@ -2,12 +2,35 @@ from playwright.sync_api import sync_playwright
 import requests
 import os
 import time
-from wxmsg import send_wx
+from urllib.parse import quote
 
-# 企业微信配置
-corpid = os.environ.get('WX_CORPID') or ''
-corpsecret = os.environ.get('WX_CORPSECRET') or ''
-agentid = os.environ.get('WX_AGENTID') or ''
+# NTFY 推送配置
+NTFY_SERVER = os.environ.get('NTFY_SERVER', 'https://ntfy.sh').rstrip('/')
+NTFY_TOPIC = os.environ.get('NTFY_TOPIC', '').strip()
+NTFY_TOKEN = os.environ.get('NTFY_TOKEN', '').strip()
+
+
+def send_ntfy(message):
+    """通过 NTFY 推送签到结果；未配置主题时跳过推送。"""
+    if not NTFY_TOPIC:
+        print('未配置 NTFY_TOPIC，跳过 NTFY 推送')
+        return
+
+    headers = {
+        'Content-Type': 'text/plain; charset=utf-8'
+    }
+
+    if NTFY_TOKEN:
+        headers['Authorization'] = f'Bearer {NTFY_TOKEN}'
+
+    response = requests.post(
+        f'{NTFY_SERVER}/{quote(NTFY_TOPIC, safe="")}',
+        data=message.encode('utf-8'),
+        headers=headers,
+        timeout=20
+    )
+    response.raise_for_status()
+    print('NTFY 推送成功')
 
 USER_AGENT = (
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
@@ -240,13 +263,8 @@ def handler(event=None, context=None):
         print('\n最终结果：')
         print(final_msg)
 
-        # 企业微信通知
-        send_wx(
-            f"[ikuuu] 多账号签到结果：\n{final_msg}",
-            corpid,
-            corpsecret,
-            agentid
-        )
+        # NTFY 通知
+        send_ntfy(f"[ikuuu] 多账号签到结果：\n{final_msg}")
 
     except Exception as e:
 
@@ -254,12 +272,7 @@ def handler(event=None, context=None):
 
         print(content)
 
-        send_wx(
-            f"[ikuuu] 签到结果：{content}",
-            corpid,
-            corpsecret,
-            agentid
-        )
+        send_ntfy(f"[ikuuu] 签到结果：{content}")
 
     return '任务完成'
 

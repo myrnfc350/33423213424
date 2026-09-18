@@ -20,32 +20,44 @@ ccc@qq.com:qwerty
 ```
 一行一个账号。不要加空格。
 
-### 下面为企业微信消息推送（选填）
+### NTFY 消息推送（选填）
 
-1Name: 
+至少配置以下 Secret：
+
+Name:
 ```
-WX_AGENTID
-```
-Secret:
-```
-填你的企业微信应用ID
-```
-2Name: 
-```
-WX_CORPID
+NTFY_TOPIC
 ```
 Secret:
 ```
-填你的企业微信ID
+你的 NTFY 主题名称
 ```
-3Name: 
+
+如果使用自建 NTFY 服务，请配置：
+
+Name:
 ```
-WX_CORPSECRET
+NTFY_SERVER
 ```
 Secret:
 ```
-填你的企业微信应用密钥
+https://你的-ntfy-服务器地址
 ```
+
+未配置 `NTFY_SERVER` 时，默认使用 `https://ntfy.sh`。
+
+如果主题需要访问令牌，请配置：
+
+Name:
+```
+NTFY_TOKEN
+```
+Secret:
+```
+你的 NTFY 访问令牌
+```
+
+未配置 `NTFY_TOPIC` 时，签到任务仍会正常执行，但会跳过消息推送。
 
 ### ✅ 第三步：测试运行
 
